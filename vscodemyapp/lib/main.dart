@@ -76,16 +76,18 @@ class _MyHomePageState extends State<MyHomePage> {
       side: BorderSide(color: Colors.pink, width: 4.0),
       borderRadius: BorderRadius.all(Radius.circular(16.0)));
 
+  var backgroundImage = AssetImage("images/background-phb4.jpg");
+
   //Drop down
   String dropdownTimerOptionValue = "25 minutes";
   bool bStartNewTimer = true;
   bool bEnableDropDownTimerOptionList = true;
 
-  void _PauseTimer(){
+  void _PauseTimer() {
     playIcon = Icon(Icons.play_circle_filled);
     bTimerIsRunning = false;
     bResumeTimer = false;
-    pausedTimerText = Text("", style: timerTextStyle);         
+    pausedTimerText = Text("", style: timerTextStyle);
   }
 
   void PauseTimer() {
@@ -121,8 +123,11 @@ class _MyHomePageState extends State<MyHomePage> {
     controller.disposeTimer();
   }
 
-  void StartOrResumeTimer() {
+  void onTimerEnd(){
+    backgroundImage = AssetImage("images/success-phb.gif");
+  }
 
+  void StartOrResumeTimer() {
     ///Update play icon
     playIcon = Icon(
       Icons.pause_circle_filled,
@@ -165,6 +170,8 @@ class _MyHomePageState extends State<MyHomePage> {
       if (dropdownTimerOptionValue == "25 minutes") {
         totalRemainingSeconds =
             DateTime.now().millisecondsSinceEpoch + 1000 * 25;
+            //suja delete
+        totalRemainingSeconds = DateTime.now().millisecondsSinceEpoch + 1000 * 5;
       } else if (dropdownTimerOptionValue == "1 hour") {
         totalRemainingSeconds =
             DateTime.now().millisecondsSinceEpoch + 1000 * 60;
@@ -181,9 +188,13 @@ class _MyHomePageState extends State<MyHomePage> {
     ///Create a new timer object
     timerObject = CountdownTimer(
         controller: controller,
-        endWidget: Text("end widget. add animation here"),
-        textStyle: timerTextStyle);
-
+        textStyle: timerTextStyle,
+        onEnd: () {
+                      setState(() {
+                        backgroundImage = AssetImage("images/success-phb.gif");
+                      });
+                  },
+    );   
     ///Resume timer
     bResumeTimer = true;
 
@@ -213,122 +224,135 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Container(
-          height: 200,
-          width: 170,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey.withOpacity(.2)),
-            borderRadius: BorderRadius.circular(10.0),
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: backgroundImage,  
+            // image: new AssetImage("images/success-phb.gif"),
+            fit: BoxFit.scaleDown,
           ),
-          child: Column(
-            // Column is also a layout widget. It takes a list of children and
-            // arranges them vertically. By default, it sizes itself to fit its
-            // children horizontally, and tries to be as tall as its parent.
-            //
-            // Invoke "debug painting" (press "p" in the console, choose the
-            // "Toggle Debug Paint" action from the Flutter Inspector in Android
-            // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-            // to see the wireframe for each widget.
-            //
-            // Column has various properties to control how it sizes itself and
-            // how it positions its children. Here we use mainAxisAlignment to
-            // center the children vertically; the main axis here is the vertical
-            // axis because Columns are vertical (the cross axis would be
-            // horizontal).
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              bResumeTimer ? timerObject : pausedTimerText, // Timer object or text to display when paused
-              IgnorePointer( // Drop down list to chose timer options from
-                ignoring: !bEnableDropDownTimerOptionList,
-                child: DropdownButton<String>(
-                  items: <String>['25 minutes', '1 hour', '1 hour 30 minutes']
-                      .map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(
-                          value,
-                          style: const TextStyle(
-                              color: Colors.yellowAccent,
-                              backgroundColor: Colors.blueAccent),
-                        ));
-                  }).toList(),
-                  autofocus: true,
-                  disabledHint:
-                      Text("Wait till the timer ends. Just.. Just.. Wait"),
-                  focusColor: Colors.blueAccent,
-                  dropdownColor: Colors.blueAccent,
-                  hint: Text("Chose your timer option"),
-                  value: dropdownTimerOptionValue,
-                  icon: const Icon(Icons.arrow_downward_rounded,
-                      color: Colors.yellowAccent),
-                  iconSize: 16,
-                  iconDisabledColor: Colors.black,
-                  iconEnabledColor: Colors.yellow,
-                  elevation: 16,
-                  style: const TextStyle(
-                      color: Colors.yellowAccent,
-                      backgroundColor: Colors.blueAccent),
-                  underline: Container(
-                    height: 3,
-                    color: Colors.yellow,
-                  ),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      dropdownTimerOptionValue = newValue!;
-                      bStartNewTimer = true;
-                    });
-                  },
-                ),
-              ),
-              Row(
-                  // Play and Stop buttons in a single row
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    // Play button
-                    FloatingActionButton(
-                      onPressed: () => setState(() {
-                        if (bTimerIsRunning) {
-                          PauseTimer();
-                        } else {
-                          StartOrResumeTimer();
-                        }
-                      }),
-                      tooltip: bTimerIsRunning ? "Pause Timer" : "Start Timer",
-                      foregroundColor: Colors.green,
-                      backgroundColor: Colors.pink,
-                      mini: false,
-                      shape: floatingActionButtonShape,
-                      child: playIcon,
-                    ), 
-                    // Stop button
-                    FloatingActionButton(
-                      heroTag: "stop_button",
-                      backgroundColor: Colors.pink,
-                      foregroundColor: Colors.grey,
-                      elevation: 16,
-                      focusColor: Colors.yellowAccent,
-                      child: const Icon(Icons.stop_sharp),
-                      focusElevation: 26,
-                      highlightElevation: 36,
-                      hoverElevation: 20,
-                      mini: false,
-                      shape: floatingActionButtonShape,
-                      tooltip:
-                          "Stop timer. Or would you rather finish what you started?",
-                      onPressed: () => setState(() {
-                        print("stopped timer");
-                        _PauseTimer();
+        ),
+        child: Center(
+          // Center is a layout widget. It takes a single child and positions it
+          // in the middle of the parent.
+          child: Container(
+            height: 200,
+            width: 170,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.withOpacity(.2)),
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            child: Column(
+              // Column is also a layout widget. It takes a list of children and
+              // arranges them vertically. By default, it sizes itself to fit its
+              // children horizontally, and tries to be as tall as its parent.
+              //
+              // Invoke "debug painting" (press "p" in the console, choose the
+              // "Toggle Debug Paint" action from the Flutter Inspector in Android
+              // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
+              // to see the wireframe for each widget.
+              //
+              // Column has various properties to control how it sizes itself and
+              // how it positions its children. Here we use mainAxisAlignment to
+              // center the children vertically; the main axis here is the vertical
+              // axis because Columns are vertical (the cross axis would be
+              // horizontal).
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                bResumeTimer
+                    ? timerObject
+                    : pausedTimerText, // Timer object or text to display when paused
+                IgnorePointer(
+                  // Drop down list to chose timer options from
+                  ignoring: !bEnableDropDownTimerOptionList,
+                  child: DropdownButton<String>(
+                    items: <String>['25 minutes', '1 hour', '1 hour 30 minutes']
+                        .map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(
+                            value,
+                            style: const TextStyle(
+                                color: Colors.yellowAccent,
+                                backgroundColor: Colors.blueAccent),
+                          ));
+                    }).toList(),
+                    autofocus: true,
+                    disabledHint:
+                        Text("Wait till the timer ends. Just.. Just.. Wait"),
+                    focusColor: Colors.blueAccent,
+                    dropdownColor: Colors.blueAccent,
+                    hint: Text("Chose your timer option"),
+                    value: dropdownTimerOptionValue,
+                    icon: const Icon(Icons.arrow_downward_rounded,
+                        color: Colors.yellowAccent),
+                    iconSize: 16,
+                    iconDisabledColor: Colors.black,
+                    iconEnabledColor: Colors.yellow,
+                    elevation: 16,
+                    style: const TextStyle(
+                        color: Colors.yellowAccent,
+                        backgroundColor: Colors.blueAccent),
+                    underline: Container(
+                      height: 3,
+                      color: Colors.yellow,
+                    ),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        dropdownTimerOptionValue = newValue!;
                         bStartNewTimer = true;
-                        bEnableDropDownTimerOptionList = true;
-                        controller.disposeTimer();
-                      }),
-                    ),// This trailing comma makes auto-formatting nicer for build methods.
-                  ])
-            ],
+                      });
+                    },
+                  ),
+                ),
+                Row(
+                    // Play and Stop buttons in a single row
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      // Play button
+                      FloatingActionButton(
+                        onPressed: () => setState(() {
+                          if (bTimerIsRunning) {
+                            PauseTimer();
+                          } else {
+                            StartOrResumeTimer();
+                          }
+                        }),
+                        tooltip:
+                            bTimerIsRunning ? "Pause Timer" : "Start Timer",
+                        foregroundColor: Colors.green,
+                        backgroundColor: Colors.pink,
+                        mini: false,
+                        shape: floatingActionButtonShape,
+                        child: playIcon,
+                      ),
+                      // Stop button
+                      FloatingActionButton(
+                        heroTag: "stop_button",
+                        backgroundColor: Colors.pink,
+                        foregroundColor: Colors.grey,
+                        elevation: 16,
+                        focusColor: Colors.yellowAccent,
+                        child: const Icon(Icons.stop_sharp),
+                        focusElevation: 26,
+                        highlightElevation: 36,
+                        hoverElevation: 20,
+                        mini: false,
+                        shape: floatingActionButtonShape,
+                        tooltip:
+                            "Stop timer. Or would you rather finish what you started?",
+                        onPressed: () => setState(() {
+                          print("stopped timer");
+                          _PauseTimer();
+                          bStartNewTimer = true;
+                          bEnableDropDownTimerOptionList = true;
+                          controller.disposeTimer();
+                        }),
+                      ), // This trailing comma makes auto-formatting nicer for build methods.
+                    ])
+              ],
+            ),
           ),
         ),
       ),
